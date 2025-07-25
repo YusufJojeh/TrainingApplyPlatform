@@ -1,0 +1,126 @@
+/* public/assets/css/style.css - Custom styles for Practical Training Requests System */
+* {margin:0;padding:0;box-sizing:border-box;}
+body {
+  font-family:'Poppins',sans-serif;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  color:#fff;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.navbar {
+  background:rgba(255,255,255,0.1)!important;
+  backdrop-filter:blur(10px);
+  transition:background .3s,box-shadow .3s;
+}
+.navbar.scrolled {
+  background:rgba(255,255,255,0.95)!important;
+  box-shadow:0 2px 20px rgba(0,0,0,0.1);
+}
+.navbar-brand, .nav-link {color:#fff!important;font-weight:500;}
+.nav-link.active, .nav-link:hover {color:#ffd700!important;}
+.nav-link {margin:0 .5rem;position:relative;}
+.nav-link::after {
+  content:'';position:absolute;bottom:-4px;left:50%;
+  width:0;height:2px;background:#ffd700;
+  transform:translateX(-50%);transition:width .3s;
+}
+.nav-link:hover::after, .nav-link.active::after {width:100%;}
+.admin-hero {
+  padding:4rem 1rem 2rem;
+  text-align:center;
+  animation:fadeInUp 1s both;
+}
+.admin-hero h1 {font-size:2.2rem;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.admin-hero p {font-size:1.08rem;opacity:.85;}
+.manage-card {
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+  box-shadow:0 18px 56px rgba(0,0,0,0.18);
+  padding:2rem 1rem 1rem 1rem;
+  max-width:1200px;
+  margin:auto;
+  animation:float 7s ease-in-out infinite;
+}
+.manage-card table {
+  background:transparent;
+  color:#fff;
+}
+.manage-card th, .manage-card td {
+  border-color:rgba(255,255,255,0.08);
+  vertical-align:middle;
+  font-size:1.02rem;
+  background:rgba(255,255,255,0.05);
+  transition:background .3s;
+}
+.manage-card tr:hover td {
+  background:rgba(255,255,255,0.13);
+  transition:background .2s;
+}
+.badge-role-admin    {background:#ff537e;color:#fff;}
+.badge-role-vendor   {background:#ffd700;color:#253053;}
+.badge-role-client   {background:#48d9ad;color:#fff;}
+.btn-action {
+  border-radius:22px;font-size:.97rem;font-weight:600;box-shadow:0 1px 10px #0001;
+}
+.btn-edit {background:linear-gradient(90deg,#ffd700,#ff537e 99%);color:#253053;border:none;}
+.btn-edit:hover {background:linear-gradient(120deg,#ff537e,#ffd700 90%);color:#fff;}
+.btn-del {background:linear-gradient(90deg,#ff537e,#ffd700 99%);color:#fff;border:none;}
+.btn-del:hover {background:linear-gradient(120deg,#ffd700,#ff537e 90%);}
+.btn-adduser {
+  background: linear-gradient(90deg,#48d9ad,#764ba2);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 2px 12px #764ba242;
+  border-radius: 22px;
+  margin-bottom: 1.5rem;
+  transition: background .3s;
+}
+.btn-adduser:hover {
+  background: linear-gradient(120deg,#764ba2,#48d9ad 90%);
+  color: #ffd700;
+}
+.modal-content {
+  border-radius: 15px;
+  background: #292a3c;
+  color: #fff;
+}
+.modal label { color: #ffd700; }
+.modal .btn-action {width:100%;}
+@media (max-width:600px) {
+  .manage-card {padding:1.3rem .4rem;}
+  table td, table th {font-size:.97rem;}
+}
+@keyframes fadeInUp {from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float {0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.navbar-brand {
+    font-weight: bold;
+}
+.jumbotron {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 2rem 1rem;
+}
+.btn-primary {
+    background: #0069d9;
+    border: none;
+}
+.btn-primary:hover {
+    background: #0056b3;
+}
+.text-warning, .alert-warning, .table-warning, .badge.bg-warning, .gradient-text-yellow, .form-label, .message-content, .faq-question, .faq-question-fancy, .notification, .btn-outline-warning, .btn-primary-glass, .profile-avatar, .stat-icon, .application-icon, .text-yellow, .text-yellow-50, .bg-yellow, .bg-yellow-50, .text-warning-50, .bg-warning-50 {
+    color: var(--bs-navbar-brand-color) !important;
+}
+
+.bg-warning, .bg-warning-50, .bg-yellow, .bg-yellow-50, .alert-warning, .table-warning, .badge.bg-warning {
+    background: rgba(255, 193, 7, 0.1) !important;
+    border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+table {
+    background: transparent !important;
+    color: #fff !important;
+}
