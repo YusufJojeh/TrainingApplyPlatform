@@ -2,13 +2,11 @@
 // app/controllers/StudentController.php - Student controller
 
 require_once __DIR__ . '/../models/Student.php';
+require_once __DIR__ . '/AuthController.php';
 
 class StudentController {
     private function requireLogin() {
-        if (!isset($_SESSION['student_id'])) {
-            header('Location: ?controller=student&action=login');
-            exit;
-        }
+        AuthController::requireRole('student');
     }
     
     public function register() {
@@ -126,9 +124,9 @@ class StudentController {
     }
     
     public function logout() {
-        session_destroy();
-        header('Location: ?controller=home');
-        exit;
+        // Use the unified logout method
+        $authController = new AuthController();
+        $authController->logout();
     }
     
     public function composeMessage() {

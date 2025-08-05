@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/../models/Admin.php';
 require_once __DIR__ . '/../models/Application.php';
+require_once __DIR__ . '/AuthController.php';
 
 class AdminController {
     public function login() {
@@ -25,10 +26,7 @@ class AdminController {
         }
     }
     private function requireLogin() {
-        if (!isset($_SESSION['admin_id'])) {
-            header('Location: ?controller=admin&action=login');
-            exit;
-        }
+        AuthController::requireRole('admin');
     }
     public function dashboard() {
         $this->requireLogin();
@@ -60,9 +58,9 @@ class AdminController {
         require __DIR__ . '/../views/admin/logs.php';
     }
     public function logout() {
-        session_destroy();
-        header('Location: ?controller=admin&action=login');
-        exit;
+        // Use the unified logout method
+        $authController = new AuthController();
+        $authController->logout();
     }
     // View student details
     public function viewStudent() {

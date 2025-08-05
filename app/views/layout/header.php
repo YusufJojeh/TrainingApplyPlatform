@@ -378,23 +378,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?controller=student&action=login">
-                        <i class="bi bi-person-check me-1"></i>Student Login
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="?controller=company&action=register">
                         <i class="bi bi-building-add me-1"></i>Company Register
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?controller=company&action=login">
-                        <i class="bi bi-building-check me-1"></i>Company Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="?controller=admin&action=login">
-                        <i class="bi bi-shield-lock me-1"></i>Admin
+                    <a class="nav-link" href="?controller=auth&action=login">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Login
                     </a>
                 </li>
             </ul>

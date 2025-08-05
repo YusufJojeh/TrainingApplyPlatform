@@ -4,13 +4,11 @@
 require_once __DIR__ . '/../models/Company.php';
 require_once __DIR__ . '/../models/Application.php';
 require_once __DIR__ . '/../models/Message.php';
+require_once __DIR__ . '/AuthController.php';
 
 class CompanyController {
     private function requireLogin() {
-        if (!isset($_SESSION['company_id'])) {
-            header('Location: ?controller=company&action=login');
-            exit;
-        }
+        AuthController::requireRole('company');
     }
 
     public function register() {
@@ -209,9 +207,9 @@ class CompanyController {
     }
 
     public function logout() {
-        session_destroy();
-        header('Location: ?controller=home');
-        exit;
+        // Use the unified logout method
+        $authController = new AuthController();
+        $authController->logout();
     }
     
     public function composeMessage() {
