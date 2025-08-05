@@ -57,202 +57,146 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="container py-5">
-    <div class="row">
-        <!-- Student Info Card -->
-        <div class="col-lg-4 mb-4">
-            <div class="glass-card p-4 h-100">
-                <div class="text-center mb-4">
-                    <div class="profile-avatar mb-3">
-                        <?php if (!empty($student['cv'])): ?>
-                            <i class="bi bi-file-earmark-person display-1 text-warning"></i>
-                        <?php else: ?>
-                            <i class="bi bi-person display-1 text-warning"></i>
-                        <?php endif; ?>
-                    </div>
-                    <h3 class="gradient-text-yellow mb-2 text-white"><?= htmlspecialchars($student['name']) ?></h3>
-                    <p class="text-white mb-1"><?= htmlspecialchars($student['major']) ?></p>
-                    <p class="text-white mb-3"><?= htmlspecialchars($student['city']) ?></p>
-                    <div class="d-grid gap-2">
-                        <a href="?controller=student&action=dashboard" class="btn btn-glass btn-outline-warning">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-                        </a>
-                        <a href="?controller=student&action=messages" class="btn btn-glass btn-outline-info">
-                            <i class="bi bi-envelope me-2"></i>View Messages
-                        </a>
+<div class="main-content">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Student Info Card -->
+            <div class="col-lg-4 mb-4">
+                <div class="glass-card p-4 h-100 animate__animated animate__fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="profile-avatar mb-3">
+                            <?php if (!empty($student['cv'])): ?>
+                                <i class="bi bi-file-earmark-person display-1 text-warning"></i>
+                            <?php else: ?>
+                                <i class="bi bi-person display-1 text-warning"></i>
+                            <?php endif; ?>
+                        </div>
+                        <h3 class="gradient-text-yellow mb-2"><?= htmlspecialchars($student['name']) ?></h3>
+                        <p class="text-white-50 mb-1"><?= htmlspecialchars($student['major']) ?></p>
+                        <p class="text-white-50 mb-3"><?= htmlspecialchars($student['city']) ?></p>
+                        <div class="d-grid gap-2">
+                            <a href="?controller=student&action=dashboard" class="btn btn-glass btn-outline-warning">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                            <a href="?controller=message&action=inbox" class="btn btn-glass btn-outline-info">
+                                <i class="bi bi-envelope me-2"></i>View Messages
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Compose Message Form -->
-        <div class="col-lg-8">
-            <div class="glass-card p-4">
-                <h2 class="gradient-text-yellow mb-4 text-white">
-                    <i class="bi bi-envelope-plus me-2"></i>Compose Message
-                </h2>
+            <!-- Compose Message Form -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h2 class="gradient-text-yellow mb-4">
+                        <i class="bi bi-envelope-plus me-2"></i>Compose Message
+                    </h2>
 
-                <?php if (isset($success)): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($success) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (isset($error)): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="bi bi-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-
-                <form method="post" action="?controller=student&action=composeMessage" id="composeForm">
-                    <!-- Recipient Selection -->
-                    <div class="mb-4">
-                        <label for="recipient_id" class="form-label text-white">
-                            <i class="bi bi-building me-2"></i>To Company *
-                        </label>
-                        <select class="form-control" id="recipient_id" name="recipient_id" required>
-                            <option value="">Select a company...</option>
-                            <?php foreach ($companies as $company): ?>
-                                <option value="<?= $company['id'] ?>" <?= ($prefill_company && $prefill_company == $company['id']) ? 'selected' : ((isset($_POST['recipient_id']) && $_POST['recipient_id'] == $company['id']) ? 'selected' : '') ?>>
-                                    <?= htmlspecialchars($company['name']) ?> - <?= htmlspecialchars($company['field']) ?> (<?= htmlspecialchars($company['city']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- Subject -->
-                    <div class="mb-4">
-                        <label for="subject" class="form-label text-white">
-                            <i class="bi bi-tag me-2"></i>Subject *
-                        </label>
-                        <input type="text" class="form-control" id="subject" name="subject" 
-                               value="<?= htmlspecialchars($prefill_subject ?: ($_POST['subject'] ?? '')) ?>" 
-                               placeholder="Enter message subject..." required>
-                    </div>
-
-                    <!-- Link to Application (Optional) -->
-                    <?php if (!empty($applications)): ?>
-                        <div class="mb-4">
-                            <label for="application_id" class="form-label text-white">
-                                <i class="bi bi-link me-2"></i>Link to Application (Optional)
-                            </label>
-                            <select class="form-control" id="application_id" name="application_id">
-                                <option value="">No application linked</option>
-                                <?php foreach ($applications as $app): ?>
-                                    <option value="<?= $app['id'] ?>" <?= ($prefill_application && $prefill_application == $app['id']) ? 'selected' : ((isset($_POST['application_id']) && $_POST['application_id'] == $app['id']) ? 'selected' : '') ?>>
-                                        Application #<?= $app['id'] ?> - <?= htmlspecialchars($app['company_name']) ?> (<?= ucfirst($app['status']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div class="form-text text-white">Linking to an application helps companies understand the context of your message.</div>
+                    <?php if (isset($success)): ?>
+                        <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInUp" role="alert">
+                            <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($success) ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
 
-                    <!-- Message Content -->
-                    <div class="mb-4">
-                        <label for="content" class="form-label text-white">
-                            <i class="bi bi-chat-text me-2"></i>Message Content *
-                        </label>
-                        <textarea id="compose-textarea" class="form-control" name="content" style="height: 300px" required><?= htmlspecialchars($prefill_content ?: ($_POST['content'] ?? '')) ?></textarea>
-                        <div class="form-text text-white">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Be professional and clear in your message. Include relevant details about your interest in the company.
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger alert-dismissible fade show animate__animated animate__fadeInUp" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                    </div>
+                    <?php endif; ?>
 
-                    <!-- Message Templates -->
-                    <div class="mb-4">
-                        <label class="form-label text-white">
-                            <i class="bi bi-lightning me-2"></i>Quick Templates
-                        </label>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('inquiry')">
-                                <i class="bi bi-question-circle me-1"></i>General Inquiry
+                    <form method="post" action="?controller=student&action=composeMessage" id="composeForm">
+                        <!-- Recipient Selection -->
+                        <div class="mb-4">
+                            <label for="recipient_id" class="form-label text-white-50">
+                                <i class="bi bi-building me-2"></i>To Company *
+                            </label>
+                            <select class="form-control" id="recipient_id" name="recipient_id" required>
+                                <option value="">Select a company...</option>
+                                <?php foreach ($companies as $company): ?>
+                                    <option value="<?= $company['id'] ?>" <?= ($prefill_company && $prefill_company == $company['id']) ? 'selected' : ((isset($_POST['recipient_id']) && $_POST['recipient_id'] == $company['id']) ? 'selected' : '') ?>>
+                                        <?= htmlspecialchars($company['name']) ?> - <?= htmlspecialchars($company['field']) ?> (<?= htmlspecialchars($company['city']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="mb-4">
+                            <label for="subject" class="form-label text-white-50">
+                                <i class="bi bi-tag me-2"></i>Subject *
+                            </label>
+                            <input type="text" class="form-control" id="subject" name="subject" 
+                                   value="<?= htmlspecialchars($prefill_subject ?: ($_POST['subject'] ?? '')) ?>" 
+                                   placeholder="Enter message subject..." required>
+                        </div>
+
+                        <!-- Link to Application (Optional) -->
+                        <?php if (!empty($applications)): ?>
+                            <div class="mb-4">
+                                <label for="application_id" class="form-label text-white-50">
+                                    <i class="bi bi-link me-2"></i>Link to Application (Optional)
+                                </label>
+                                <select class="form-control" id="application_id" name="application_id">
+                                    <option value="">No application linked</option>
+                                    <?php foreach ($applications as $app): ?>
+                                        <option value="<?= $app['id'] ?>" <?= ($prefill_application && $prefill_application == $app['id']) ? 'selected' : ((isset($_POST['application_id']) && $_POST['application_id'] == $app['id']) ? 'selected' : '') ?>>
+                                            Application #<?= $app['id'] ?> - <?= htmlspecialchars($app['company_name']) ?> (<?= ucfirst($app['status']) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="form-text text-white-50">Linking to an application helps companies understand the context of your message.</div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Message Content -->
+                        <div class="mb-4">
+                            <label for="content" class="form-label text-white-50">
+                                <i class="bi bi-chat-text me-2"></i>Message Content *
+                            </label>
+                            <textarea id="compose-textarea" class="form-control" name="content" style="height: 300px" required><?= htmlspecialchars($prefill_content ?: ($_POST['content'] ?? '')) ?></textarea>
+                            <div class="form-text text-white-50">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Be professional and clear in your message. Include relevant details about your interest in the company.
+                            </div>
+                        </div>
+
+                        <!-- Message Templates -->
+                        <div class="mb-4">
+                            <label class="form-label text-white-50">
+                                <i class="bi bi-lightning me-2"></i>Quick Templates
+                            </label>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('inquiry')">
+                                    <i class="bi bi-question-circle me-1"></i>General Inquiry
+                                </button>
+                                <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('application')">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Application Follow-up
+                                </button>
+                                <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('thank')">
+                                    <i class="bi bi-heart me-1"></i>Thank You
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-glass btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset
                             </button>
-                            <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('application')">
-                                <i class="bi bi-file-earmark-text me-1"></i>Application Follow-up
-                            </button>
-                            <button type="button" class="btn btn-glass btn-outline-warning btn-sm" onclick="loadTemplate('thank')">
-                                <i class="bi bi-heart me-1"></i>Thank You
+                            <button type="submit" class="btn btn-glass btn-primary-glass btn-lg">
+                                <i class="bi bi-send me-2"></i>Send Message
                             </button>
                         </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="reset" class="btn btn-glass btn-outline-secondary btn-lg">
-                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
-                        </button>
-                        <button type="submit" class="btn btn-glass btn-primary-glass btn-lg">
-                            <i class="bi bi-send me-2"></i>Send Message
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 221, 51, 0.1);
-    border-radius: 50%;
-    border: 2px solid var(--accent-yellow);
-}
-
-.form-control {
-    background: rgba(255, 221, 51, 0.08) !important;
-    border: 1px solid var(--glass-border) !important;
-    color: var(--accent-yellow) !important;
-    backdrop-filter: blur(10px);
-}
-
-.form-control:focus {
-    background: rgba(255, 221, 51, 0.15) !important;
-    border-color: rgba(255, 221, 51, 0.3) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 221, 51, 0.1) !important;
-    color: var(--accent-yellow) !important;
-}
-
-.form-control::placeholder {
-    color: rgba(255, 221, 51, 0.6) !important;
-}
-
-.form-label {
-    color: rgba(255, 221, 51, 0.8) !important;
-    font-weight: 500;
-}
-
-textarea.form-control {
-    resize: vertical;
-    min-height: 300px;
-}
-
-.btn-group .btn {
-    margin-right: 0.25rem;
-}
-
-.btn-group .btn:last-child {
-    margin-right: 0;
-}
-</style>
-
-<!-- jQuery (must be loaded before Summernote) -->
-<script src="/pro/public/assets/js/jquery.min.js"></script>
-<!-- Summernote CSS -->
-<link rel="stylesheet" href="/pro/public/assets/summernote/summernote-bs4.min.css">
-<!-- Summernote core JS (required for bs4 theme) -->
-<script src="/pro/public/assets/summernote/summernote.min.js"></script>
-<!-- Summernote JS (Bootstrap 4 theme) -->
-<script src="/pro/public/assets/summernote/summernote-bs4.min.js"></script>
 <script>
 // Message templates
 const templates = {
@@ -336,10 +280,18 @@ function showNotification(message, type) {
     `);
     $('body').append(notification);
     setTimeout(() => {
-        notification.addClass('animate__fadeOutRight');
-        setTimeout(() => notification.remove(), 500);
+        notification.fadeOut(500, () => notification.remove());
     }, 3000);
 }
+
+// Auto-hide alerts after 5 seconds
+setTimeout(() => {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 5000);
 </script>
 
 <?php include __DIR__ . '/../layout/footer.php'; ?> 

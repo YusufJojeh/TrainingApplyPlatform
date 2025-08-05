@@ -29,422 +29,323 @@ $rejectedApplications = count(array_filter($applications, fn($app) => $app['stat
 $unreadMessages = count(array_filter($studentMessages, function($msg) {
     return $msg['sender_type'] === 'company' && !isset($msg['is_read']);
 }));
+
+// Calculate additional stats
+$thisWeekApplications = count(array_filter($applications, fn($app) => strtotime($app['created_at']) > strtotime('-7 days')));
+$thisMonthApplications = count(array_filter($applications, fn($app) => strtotime($app['created_at']) > strtotime('-30 days')));
+$acceptanceRate = $totalApplications > 0 ? round(($acceptedApplications / $totalApplications) * 100, 1) : 0;
+
+// Handle success/error messages
+$successMessage = '';
+$errorMessage = '';
+
+if (isset($_GET['msg']) && $_GET['msg'] === 'applied') {
+    $successMessage = "Application submitted successfully!";
+}
+
+if (isset($_GET['error']) && $_GET['error'] === 'failed') {
+    $errorMessage = "Failed to submit application. Please try again.";
+}
 ?>
 
-<!-- Student Dashboard Navbar -->
-<!-- <nav class="navbar navbar-expand-lg navbar-dark fixed-top student-navbar">
-    <div class="container">
-        <a class="navbar-brand" href="?controller=student&action=dashboard">
-            <i class="bi bi-mortarboard-fill me-2"></i>Student Portal
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#studentNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="studentNavbar">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="?controller=student&action=dashboard">
-                        <i class="bi bi-house-door me-1"></i>Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="?controller=student&action=composeMessage">
-                        <i class="bi bi-plus-circle me-1"></i>Apply
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="?controller=message&action=inbox">
-                        <i class="bi bi-envelope me-1"></i>Messages
-                        <?php if ($unreadMessages > 0): ?>
-                            <span class="badge bg-danger ms-1"><?= $unreadMessages ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="?controller=student&action=profile">
-                        <i class="bi bi-person me-1"></i>Profile
-                    </a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($student['name']) ?>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="?controller=student&action=profile">
-                            <i class="bi bi-person me-2"></i>My Profile
-                        </a></li>
-                        <li><a class="dropdown-item" href="?controller=student&action=settings">
-                            <i class="bi bi-gear me-2"></i>Settings
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="?controller=student&action=logout">
-                            <i class="bi bi-box-arrow-right me-2"></i>Logout
-                        </a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav> -->
+<div class="main-content">
+    <div class="container py-5">
+        <!-- Success/Error Messages -->
+        <?php if ($successMessage): ?>
+            <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInUp">
+                <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($successMessage) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
 
-<div class="container-fluid py-5 mt-5">
-    <!-- Welcome Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="glass-card p-4 text-center">
-                <h1 class="text-white mb-2">Welcome back, <?= htmlspecialchars($student['name']) ?>!</h1>
-                <p class="text-white mb-0">Track your applications and connect with companies</p>
+        <?php if ($errorMessage): ?>
+            <div class="alert alert-danger alert-dismissible fade show animate__animated animate__fadeInUp">
+                <i class="bi bi-exclamation-circle me-2"></i><?= htmlspecialchars($errorMessage) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        </div>
-    </div>
+        <?php endif; ?>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="glass-card p-4 text-center h-100">
-                <div class="stat-icon mb-3">
-                    <i class="bi bi-file-earmark-text display-4 text-warning"></i>
+        <!-- Dashboard Header -->
+        <div class="glass-card p-4 mb-4 animate__animated animate__fadeInUp">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="gradient-text-yellow mb-2">Welcome back, <?= htmlspecialchars($student['name']) ?>!</h1>
+                    <p class="text-white-50 mb-0">Track your applications and connect with companies for your dream internship</p>
                 </div>
-                <h3 class="text-white mb-1"><?= $totalApplications ?></h3>
-                <p class="text-white mb-0">Total Applications</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="glass-card p-4 text-center h-100">
-                <div class="stat-icon mb-3">
-                    <i class="bi bi-clock display-4 text-warning"></i>
-                </div>
-                <h3 class="text-white mb-1"><?= $pendingApplications ?></h3>
-                <p class="text-white mb-0">Pending</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="glass-card p-4 text-center h-100">
-                <div class="stat-icon mb-3">
-                    <i class="bi bi-check-circle display-4 text-success"></i>
-                </div>
-                <h3 class="text-white mb-1"><?= $acceptedApplications ?></h3>
-                <p class="text-white mb-0">Accepted</p>
-            </div>
+                <div class="col-md-4 text-end">
+                    <div class="profile-avatar">
+                        <i class="bi bi-mortarboard-fill display-4 text-warning"></i>
                     </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="glass-card p-4 text-center h-100">
-                <div class="stat-icon mb-3">
-                    <i class="bi bi-envelope display-4 text-info"></i>
-                </div>
-                <h3 class="text-white mb-1"><?= count($companyResponses) ?></h3>
-                <p class="text-white mb-0">Responses</p>
                 </div>
             </div>
         </div>
 
-    <!-- Main Content -->
-    <div class="row">
-        <!-- Applications Section -->
-        <div class="col-lg-8 mb-4">
-            <div class="glass-card p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="text-white mb-0">
-                        <i class="bi bi-briefcase me-2"></i>My Applications
-                    </h2>
-                    <a href="?controller=student&action=composeMessage" class="btn btn-glass btn-primary-glass">
-                        <i class="bi bi-plus-circle me-2"></i>New Application
-                    </a>
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp">
+                    <div class="stat-number display-4 fw-bold gradient-text-yellow mb-2"><?= $totalApplications ?></div>
+                    <div class="text-white-50">Total Applications</div>
                 </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="stat-number display-4 fw-bold gradient-text-yellow mb-2"><?= $pendingApplications ?></div>
+                    <div class="text-white-50">Pending Review</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="stat-number display-4 fw-bold gradient-text-yellow mb-2"><?= $acceptedApplications ?></div>
+                    <div class="text-white-50">Accepted</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp animate__delay-3s">
+                    <div class="stat-number display-4 fw-bold gradient-text-yellow mb-2"><?= count($companyResponses) ?></div>
+                    <div class="text-white-50">Responses</div>
+                </div>
+            </div>
+        </div>
 
-                <?php if (empty($applications)): ?>
-                    <div class="text-center py-5">
-                        <div class="empty-state mb-4">
-                            <i class="bi bi-inbox display-1 text-white"></i>
+        <!-- Additional Stats -->
+        <?php if ($totalApplications > 0): ?>
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp">
+                    <div class="stat-number display-5 fw-bold gradient-text-yellow mb-2"><?= $acceptanceRate ?>%</div>
+                    <div class="text-white-50">Acceptance Rate</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="stat-number display-5 fw-bold gradient-text-yellow mb-2"><?= $thisWeekApplications ?></div>
+                    <div class="text-white-50">This Week</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="glass-card p-3 text-center animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="stat-number display-5 fw-bold gradient-text-yellow mb-2"><?= $unreadMessages ?></div>
+                    <div class="text-white-50">Unread Messages</div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Applications Section -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 animate__animated animate__fadeInUp">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="gradient-text-yellow mb-1">
+                                <i class="bi bi-briefcase me-2"></i>My Applications
+                            </h3>
+                            <p class="text-white-50 mb-0">Track your internship applications and responses</p>
                         </div>
-                        <h4 class="text-white mb-3">No Applications Yet</h4>
-                        <p class="text-white mb-4">Start your journey by applying to companies!</p>
-                        <a href="?controller=application&action=create" class="btn btn-glass btn-primary-glass">
-                            <i class="bi bi-rocket-takeoff me-2"></i>Apply Now
-                        </a>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-glass btn-outline-warning active" data-filter="all">All</button>
+                            <button type="button" class="btn btn-glass btn-outline-warning" data-filter="pending">Pending</button>
+                            <button type="button" class="btn btn-glass btn-outline-success" data-filter="accepted">Accepted</button>
+                            <button type="button" class="btn btn-glass btn-outline-danger" data-filter="rejected">Rejected</button>
+                        </div>
                     </div>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-dark">
-                            <thead>
-                                <tr>
-                                    <th class="text-white">Company</th>
-                                    <th class="text-white">Status</th>
-                                    <th class="text-white">Applied Date</th>
-                                    <th class="text-white">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($applications as $app): ?>
+
+                    <?php if (empty($applications)): ?>
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-white-50 mb-3"></i>
+                            <h4 class="text-white-50 mb-3">No Applications Yet</h4>
+                            <p class="text-white-50 mb-4">Start your journey by applying to companies!</p>
+                            <a href="?controller=application&action=create" class="btn btn-glass btn-primary-glass">
+                                <i class="bi bi-rocket-takeoff me-2"></i>Apply Now
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-dark align-middle glass-card animate__animated animate__fadeIn">
+                                <thead>
                                     <tr>
-                                        <td>
+                                        <th class="text-white">Company</th>
+                                        <th class="text-white">Field</th>
+                                        <th class="text-white">Applied Date</th>
+                                        <th class="text-white">Status</th>
+                                        <th class="text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($applications as $app): ?>
+                                    <tr class="application-item" data-status="<?= $app['status'] ?? 'pending' ?>">
+                                        <td class="text-white align-middle">
                                             <strong class="text-warning"><?= htmlspecialchars($app['company_name']) ?></strong>
                                         </td>
-                                        <td>
+                                        <td class="text-white-50 align-middle"><?= htmlspecialchars($app['field'] ?? 'N/A') ?></td>
+                                        <td class="text-white-50 align-middle"><?= date('M d, Y', strtotime($app['created_at'])) ?></td>
+                                        <td class="align-middle">
                                             <?php
-                                            $statusClass = match($app['status']) {
+                                            $statusClass = match($app['status'] ?? 'pending') {
                                                 'accepted' => 'success',
                                                 'rejected' => 'danger',
                                                 default => 'warning'
                                             };
-                                            $statusText = ucfirst($app['status']);
+                                            $statusText = ucfirst($app['status'] ?? 'pending');
                                             ?>
-                                            <span class="badge bg-<?= $statusClass ?>"><?= $statusText ?></span>
+                                            <span class="badge bg-<?= $statusClass ?> text-white fw-bold"><?= $statusText ?></span>
                                         </td>
-                                        <td class="text-white">
-                                            <?= date('M d, Y', strtotime($app['created_at'])) ?>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                            <a href="?controller=application&action=detail&id=<?= $app['id'] ?>" 
-                                               class="btn btn-sm btn-outline-warning">
-                                                <i class="bi bi-eye me-1"></i>View
-                                            </a>
-                                                <?php if ($app['status'] === 'pending'): ?>
+                                        <td class="align-middle">
+                                            <div class="d-flex gap-2">
+                                                <a href="?controller=application&action=detail&id=<?= $app['id'] ?>" 
+                                                   class="btn btn-sm btn-glass btn-outline-warning text-white" 
+                                                   data-bs-toggle="tooltip" title="View details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <?php if (($app['status'] ?? 'pending') === 'pending'): ?>
                                                     <a href="?controller=message&action=sendApplication&company_id=<?= $app['company_id'] ?>&application_id=<?= $app['id'] ?>" 
-                                                       class="btn btn-sm btn-outline-info">
-                                                        <i class="bi bi-envelope me-1"></i>Message
+                                                       class="btn btn-sm btn-glass btn-outline-info text-white"
+                                                       data-bs-toggle="tooltip" title="Send message">
+                                                        <i class="bi bi-envelope"></i>
                                                     </a>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4 mb-4">
-            <!-- Profile Card -->
-            <div class="glass-card p-4 mb-4">
-                <div class="text-center mb-4">
-                    <div class="profile-avatar mb-3">
-                        <i class="bi bi-person-circle display-1 text-warning"></i>
-                    </div>
-                    <h3 class="text-white mb-2"><?= htmlspecialchars($student['name']) ?></h3>
-                    <p class="text-white mb-1"><?= htmlspecialchars($student['major']) ?></p>
-                    <p class="text-white mb-3"><?= htmlspecialchars($student['city']) ?></p>
-                    <div class="d-grid gap-2">
-                        <a href="?controller=student&action=profile" class="btn btn-glass btn-outline-warning">
-                            <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                        </a>
-        </div>
-    </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="glass-card p-4 mb-4">
-                <h4 class="text-white mb-3">
-                    <i class="bi bi-lightning me-2"></i>Quick Actions
-                </h4>
-                <div class="d-grid gap-2">
-                    <a href="?controller=student&action=composeMessage" class="btn btn-glass btn-outline-primary">
-                        <i class="bi bi-plus-circle me-2"></i>Apply to Company
-                    </a>
-                    <a href="?controller=message&action=inbox" class="btn btn-glass btn-outline-info">
-                        <i class="bi bi-envelope me-2"></i>View Messages
-                        <?php if ($unreadMessages > 0): ?>
-                            <span class="badge bg-danger ms-1"><?= $unreadMessages ?></span>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <?php if (count($applications) > 10): ?>
+                            <div class="text-center mt-4">
+                                <a href="?controller=application&action=list" class="btn btn-glass btn-primary-glass">
+                                    <i class="bi bi-arrow-right me-2"></i>View All Applications (<?= $totalApplications ?>)
+                                </a>
+                            </div>
                         <?php endif; ?>
-                    </a>
-                                            <a href="?controller=student&action=settings" class="btn btn-glass btn-outline-secondary">
-                            <i class="bi bi-gear me-2"></i>Settings
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Profile Card -->
+                <div class="glass-card p-4 mb-4 animate__animated animate__fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="profile-avatar mb-3">
+                            <i class="bi bi-mortarboard-fill display-1 text-warning"></i>
+                        </div>
+                        <h3 class="gradient-text-yellow mb-2"><?= htmlspecialchars($student['name']) ?></h3>
+                        <p class="text-white-50 mb-1"><?= htmlspecialchars($student['major']) ?></p>
+                        <p class="text-white-50 mb-3">
+                            <i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($student['city']) ?>
+                        </p>
+                        <div class="d-grid gap-2">
+                            <a href="?controller=student&action=profile" class="btn btn-glass btn-outline-warning">
+                                <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="glass-card p-4 mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h5 class="gradient-text-yellow mb-3">
+                        <i class="bi bi-lightning me-2"></i>Quick Actions
+                    </h5>
+                    <div class="d-grid gap-2">
+                        <a href="?controller=application&action=create" class="btn btn-glass btn-primary-glass">
+                            <i class="bi bi-plus-circle me-2"></i>Apply to Company
+                        </a>
+                        <a href="?controller=message&action=inbox" class="btn btn-glass btn-outline-warning">
+                            <i class="bi bi-envelope me-2"></i>View Messages
+                            <?php if ($unreadMessages > 0): ?>
+                                <span class="badge bg-danger ms-1"><?= $unreadMessages ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="?controller=student&action=composeMessage" class="btn btn-glass btn-outline-info">
                             <i class="bi bi-envelope-plus me-2"></i>Compose Message
                         </a>
-                </div>
-            </div>
-
-            <!-- Recent Responses -->
-            <div class="glass-card p-4">
-                <h4 class="text-white mb-3">
-                    <i class="bi bi-chat-dots me-2"></i>Recent Responses
-                </h4>
-                <?php if (empty($companyResponses)): ?>
-                    <p class="text-white mb-0">No responses yet.</p>
-                <?php else: ?>
-                    <div class="responses-list">
-                        <?php 
-                        $recentResponses = array_slice($companyResponses, 0, 3);
-                        foreach ($recentResponses as $msg): 
-                        ?>
-                            <div class="response-item mb-3 p-3 border-start border-warning">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <strong class="text-warning">Company #<?= htmlspecialchars($msg['sender_id']) ?></strong>
-                                        <p class="text-white mb-1 small"><?= htmlspecialchars($msg['content']) ?></p>
-                                    </div>
-                                    <small class="text-white"><?= date('M d', strtotime($msg['created_at'])) ?></small>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <?php if (count($companyResponses) > 3): ?>
-                            <a href="?controller=message&action=inbox" class="btn btn-sm btn-outline-warning w-100">
-                                View All Responses
-                            </a>
-                        <?php endif; ?>
+                        <a href="?controller=student&action=settings" class="btn btn-glass btn-outline-secondary">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </a>
                     </div>
-                <?php endif; ?>
+                </div>
+
+                <!-- Recent Responses -->
+                <div class="glass-card p-4 animate__animated animate__fadeInUp animate__delay-2s">
+                    <h5 class="gradient-text-yellow mb-3">
+                        <i class="bi bi-chat-dots me-2"></i>Recent Responses
+                    </h5>
+                    <?php if (empty($companyResponses)): ?>
+                        <div class="text-center py-3">
+                            <i class="bi bi-inbox text-white-50 mb-2"></i>
+                            <p class="text-white-50 mb-0">No responses yet.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="responses-list">
+                            <?php 
+                            $recentResponses = array_slice($companyResponses, 0, 3);
+                            foreach ($recentResponses as $msg): 
+                            ?>
+                                <div class="response-item mb-3 p-3 border-start border-warning">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong class="text-warning">Company #<?= htmlspecialchars($msg['sender_id']) ?></strong>
+                                            <p class="text-white-50 mb-1 small"><?= htmlspecialchars(substr($msg['content'], 0, 100)) ?>...</p>
+                                        </div>
+                                        <small class="text-white-50"><?= date('M d', strtotime($msg['created_at'])) ?></small>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            <?php if (count($companyResponses) > 3): ?>
+                                <a href="?controller=message&action=inbox" class="btn btn-sm btn-outline-warning w-100">
+                                    View All Responses
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-/* Student Dashboard Styles */
-.student-navbar {
-    background: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 221, 51, 0.2);
-}
+<script>
+// Filter functionality
+document.querySelectorAll('[data-filter]').forEach(button => {
+    button.addEventListener('click', function() {
+        const filter = this.dataset.filter;
+        
+        // Update active button
+        document.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        // Filter applications
+        document.querySelectorAll('.application-item').forEach(item => {
+            const status = item.dataset.status || 'pending';
+            const shouldShow = filter === 'all' || status === filter;
+            item.style.display = shouldShow ? 'table-row' : 'none';
+        });
+    });
+});
 
-.student-navbar .navbar-brand {
-    color: var(--accent-yellow) !important;
-    font-weight: bold;
-}
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
 
-.student-navbar .nav-link {
-    color: rgba(255, 255, 255, 0.8) !important;
-    transition: color 0.3s ease;
-}
-
-.student-navbar .nav-link:hover,
-.student-navbar .nav-link.active {
-    color: var(--accent-yellow) !important;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 1rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.stat-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 221, 51, 0.1);
-    border-radius: 50%;
-    border: 2px solid var(--accent-yellow);
-}
-
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 221, 51, 0.1);
-    border-radius: 50%;
-    border: 2px solid var(--accent-yellow);
-}
-
-.empty-state {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.responses-list {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.response-item {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-    transition: background 0.3s ease;
-}
-
-.response-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-glass {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--text-light);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.btn-glass:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: var(--text-light);
-}
-
-.btn-primary-glass {
-    background: rgba(255, 221, 51, 0.2);
-    border-color: var(--accent-yellow);
-    color: var(--accent-yellow);
-}
-
-.btn-primary-glass:hover {
-    background: rgba(255, 221, 51, 0.3);
-    border-color: var(--accent-yellow);
-    color: var(--accent-yellow);
-}
-
-.btn-outline-warning {
-    border-color: var(--accent-yellow);
-    color: var(--accent-yellow);
-}
-
-.btn-outline-warning:hover {
-    background: var(--accent-yellow);
-    border-color: var(--accent-yellow);
-    color: #000;
-}
-
-.table-dark {
-    background: transparent;
-    color: var(--text-light);
-}
-
-.table-dark th,
-.table-dark td {
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.dropdown-menu-dark {
-    background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dropdown-item {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.dropdown-item:hover {
-    background: rgba(255, 221, 51, 0.1);
-    color: var(--accent-yellow);
-}
-
-table {
-    background: transparent !important;
-    color: #fff !important;
-}
-</style>
+// Auto-hide alerts after 5 seconds
+setTimeout(() => {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 5000);
+</script>
 
 <?php include __DIR__ . '/../layout/footer.php'; ?> 
